@@ -30,10 +30,19 @@
                 <version>1.17.2</version>
                 <configuration>
                     <targetClasses>
-<!--                        <param>validator.JsonValidator</param>-->
+                        <param>jsontree.JsonNode</param>
+                        <param>jsontree.JsonString</param>
+                        <param>jsontree.IJsonArray</param>
+                        <param>jsontree.JsonArray</param>
+                        <param>jsontree.IJsonObject</param>
+                        <param>jsontree.JsonObject</param>
+                        <param>jsontree.JsonTreeBuilder</param>
+                        <param>jsontree.Pair</param>
                     </targetClasses>
                     <targetTests>
-<!--                        <param>validator.JsonValidatorTest</param>-->
+                        <param>jsontree.JsonTest</param>
+                        <param>validator.JsonValidatorTest</param>
+                        <param>jsontree.JsonTreeBuilderTest</param>
                     </targetTests>
                 </configuration>
             </plugin>

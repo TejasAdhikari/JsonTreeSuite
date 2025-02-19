@@ -1,5 +1,6 @@
 package jsontree;
 
+
 /**
  * This is a concrete class that represents a Json string.
  * It extends and fully implements JsonNode.
@@ -11,7 +12,7 @@ package jsontree;
  * might need access to the value of class attribute jsonString.
  * String is immutable so it doesn't cause any issues anyway.
  */
-public class JsonString extends JsonNode {
+public final class JsonString extends JsonNode {
   private final String jsonString;
 
   /**
@@ -21,7 +22,7 @@ public class JsonString extends JsonNode {
    *                   initialized to the jsonString
    *                   attribute of the class.
    */
-  public JsonString (String jsonString) {
+  public JsonString(String jsonString) {
     this.jsonString = jsonString;
   }
 
@@ -32,5 +33,39 @@ public class JsonString extends JsonNode {
    */
   public String prettyPrint() {
     return "\"" + jsonString + "\"";
+  }
+
+
+  /**
+   * This method overrides the default equals method of object Class.
+   *
+   * @param o Takes in the object to be compared with.
+   * @return a boolean value indicating the sameness.
+   */
+  @Override
+  public boolean equals(Object o) {
+    // Fast pointer equality.
+    if (this == o) {
+      return true;
+    }
+    // If o isn't the right class then it can't be equal.
+    if (!(o instanceof JsonString)) {
+      return false;
+    }
+
+    JsonString other = (JsonString) o;
+
+    return this.jsonString.equals(other.jsonString);
+  }
+
+  /**
+   * Hashcode method has to be replaced as well to work
+   * properly with Hashing.
+   *
+   * @return An int denoting the hashcode.
+   */
+  @Override
+  public int hashCode() {
+    return jsonString.hashCode();
   }
 }
