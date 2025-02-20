@@ -1,10 +1,6 @@
 package validator;
 
-import java.util.Objects;
-import java.util.Stack;
-
-import parser.InvalidJsonException;
-import parser.JsonParser;
+import parser.AbstractJsonParser;
 
 
 /**
@@ -24,79 +20,22 @@ import parser.JsonParser;
  * developed by the given inputs.
  *
  */
-public class JsonValidator implements JsonParser<String> {
-  private String json;
-  private final String[] status = { "Empty", "Valid", "Incomplete", "Invalid" };
-  private String currentStatus;
-  private int countBraces;
-  private Stack<Character> allBrackets;
-  private boolean inValue;
-  private boolean inKey;
-  private int separatedCount;
-  private int keyCount;
-  private int keyValueCount;
-
+public class JsonValidator extends AbstractJsonParser<String> {
   /**
    * This is the constructor for JsonValidator class.
    * It initializes the 'json' string, 'currentStatus'  as 'Empty'
-   * and the other private variables.
+   * and the other attributes in the super class using super.
    */
   public JsonValidator() {
-    this.json = "";
-    this.currentStatus = status[0];
-    this.countBraces = 0;
-    this.allBrackets = new Stack<>();
-    this.inValue = false;
-    this.inKey = false;
-    this.separatedCount = 0;
-    this.keyCount = 0;
-    this.keyValueCount = 0;
+    super();
   }
 
   /**
-   * Check if the json is already valid, if so no need to check validity.
-   * Just check if the current character is ' ' or not.
-   * ' ' -> allowed but anything else not allowed except escape characters.
+   * This method gives the output of the current status
+   * of the json being built.
    *
-   * <p>We are prematurely checking for invalid states to same on runtime.
-   *
-   * @param c the input character
-   * @return the current object
-   * @throws InvalidJsonException defined in the parser package
+   * @return a String value denoting the status.
    */
-  @Override
-  public JsonParser<String> input(char c) throws InvalidJsonException {
-    // Check if the json is already valid, if so no need to check validity.
-    // Just check if the current character is ' ' or not.
-    // ' ' -> allowed but anything else not allowed.
-    if (Objects.equals(currentStatus, status[1]) && c != ' ') {
-      currentStatus = status[3];
-      return this;
-    }
-
-    if (c == '\n' || c == '\t' || c == '\r' || c == '\f') {
-      return this;
-    }
-
-    boolean validity = isValidJson(c);
-    if (!Objects.equals(currentStatus, status[3])) {
-      if (validity && (c != ' ' || (inKey || inValue))) {
-        this.json += c;
-
-        if (allBrackets.empty() && !Objects.equals(currentStatus, status[1])) {
-          this.currentStatus = status[1];
-        }
-        else {
-          this.currentStatus = status[2];
-        }
-      } else if (!validity) {
-        this.currentStatus = status[3];
-        throw new InvalidJsonException("Invalid input making the JSON invalid");
-      }
-    }
-    return this;
-  }
-
   @Override
   public String output() {
     return "Status:" + currentStatus;
@@ -113,7 +52,8 @@ public class JsonValidator implements JsonParser<String> {
    * @return Checks with the current json present and returns
    *         "True" if valid, and "False" if invalid.
    */
-  private boolean isValidJson(char c) {
+  @Override
+  protected boolean isValidJson(char c) {
     if (inValue) {
       inValue = checkValue(c);
       return true;
@@ -124,95 +64,151 @@ public class JsonValidator implements JsonParser<String> {
   }
 
   /**
-   * This method checks the validity of the current character
-   * wrt the stored json string if it is not inside a key or value string.
+   * A new object is allowed in an array only if the json
+   * string is empty or
+   * '{' is preceded by ':'.
    *
-   * @param c Takes in a character to add to the json available.
-   * @return Checks with the current json present and returns
-   *         "True" if valid, and "False" if invalid.
+   * @return a boolean value indicating the validity of the opening brace.
    */
-  private boolean checkValidity(char c) {
-    switch (c) {
-      /* A new object is allowed in an array only if the json
-      string is empty or
-      '{' is preceded by ':'.*/
-      case '{' :
-        if (json.isEmpty() || json.charAt(json.length() - 1) == '['
-                || json.charAt(json.length() - 1) == ',' || json.charAt(json.length() - 1) == ':') {
-          allBrackets.push(c);
-          keyValueCount += 1;
-          countBraces += 1;
-          return true;
-        }
-        break;
-      /* An object is allowed to be closed if all '[' and '"' are closed.
-      This is checked before entering switch case.
-      Should be preceded by '"' or ']'*/
-      case '}' :
-        if (!allBrackets.isEmpty() && allBrackets.peek() == '{'
-                && (json.charAt(json.length() - 1) == '{' || json.charAt(json.length() - 1) == ']'
-                || json.charAt(json.length() - 1) == '}' || (json.charAt(json.length() - 1) == '\"'
-                // Check if ':' is present before '}' and after '{'
-                && json.lastIndexOf(':') > json.lastIndexOf('{')))) {
-          allBrackets.pop();
-          return true;
-        }
-        break;
-      // A new array is allowed only if '[' is preceded by ':' or '[' or ','
-      // And it should be inside "{}".
-      case '[' :
-        if (countBraces >= 1 && (json.charAt(json.length() - 1) == '['
-                || json.charAt(json.length() - 1) == ':' || (json.charAt(json.length() - 1) == ','
-                && !allBrackets.isEmpty() && allBrackets.peek() == '['))) {
-          allBrackets.push(c);
-          return true;
-        }
-        break;
-      //  A new array is allowed only if '[' is preceded by ':' or '[' or ','.
-      case ']' :
-        if (!allBrackets.isEmpty() && allBrackets.peek() == '['
-                && (json.charAt(json.length() - 1) == '\"' || json.charAt(json.length() - 1) == ']'
-                || json.charAt(json.length() - 1) == '}')) {
-          allBrackets.pop();
-          return true;
-        }
-        break;
-      /* A new string is allowed only if '"' is preceded by ':',
-      ',', '['.*/
-      case '\"' :
-        if (!allBrackets.isEmpty() && allBrackets.peek() == '{' && keyCount < keyValueCount
-                && json.charAt(json.length() - 1) != ':') {
-          keyCount += 1;
-          inKey = true;
-          return true;
-        } else if (countBraces >= 1 && (json.charAt(json.length() - 1) == '['
-                || json.charAt(json.length() - 1) == ':'
-                || json.charAt(json.length() - 1) == ',')) {
-          inValue = true;
-          return true;
-        }
-        break;
-      case ',' :
-        if (separatedCount == keyCount && (json.charAt(json.length() - 1) == '}'
-                || json.charAt(json.length() - 1) == ']'
-                || json.charAt(json.length() - 1) == '\"')) {
-          if (!allBrackets.isEmpty() && allBrackets.peek() == '{') {
-            keyValueCount += 1;
-          }
-          return true;
-        }
-        break;
-      case ':' :
-        if (!allBrackets.isEmpty() && allBrackets.peek() == '{'
-                && json.charAt(json.length() - 1) == '\"') {
-          separatedCount += 1;
-          return true;
-        }
-        break;
-      case ' ':
+  @Override
+  protected boolean checkBraceOpening() {
+    boolean flag = false;
+    if (!json.isEmpty()) {
+      char lastChar = json.charAt(json.length() - 1);
+      if (lastChar == '[' || lastChar == ',' || lastChar == ':') {
+        flag = true;
+      }
+    }
+    if (flag || json.isEmpty()) {
+      allBrackets.push('{');
+      keyValueCount += 1;
+      countBraces += 1;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * An object is allowed to be closed if all '[' and '"' are closed.
+   * This is checked before entering switch case.
+   * Should be preceded by '"' or ']'.
+   *
+   * @return a boolean value indicating the validity of the closing brace.
+   */
+  @Override
+  protected boolean checkBraceClosing() {
+    if (!json.isEmpty()) {
+      char lastChar = json.charAt(json.length() - 1);
+      // Check if ':' is present before '}' and after '{'
+      if (!allBrackets.isEmpty() && allBrackets.peek() == '{'
+              && (lastChar == '{' || lastChar == ']' || lastChar == '}' || (lastChar == '\"'
+              && json.lastIndexOf(':') > json.lastIndexOf('{')))) {
+        allBrackets.pop();
         return true;
-      default:
-        break;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * A new array is allowed only if '[' is preceded by ':' or '[' or ','
+   * and it should be inside "{}".
+   *
+   * @return a boolean value indicating the validity of the opening bracket.
+   */
+  @Override
+  protected boolean checkArrayOpening() {
+    if (!json.isEmpty()) {
+      char lastChar = json.charAt(json.length() - 1);
+      if (countBraces >= 1 && (lastChar == '[' || lastChar == ':'
+              || (lastChar == ',' && !allBrackets.isEmpty() && allBrackets.peek() == '['))) {
+        allBrackets.push('[');
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * An array is allowed to be closed if all the elements inside are
+   * closed and separated properly.
+   *
+   * @return a boolean value indicating the validity of the closing Bracket.
+   */
+  @Override
+  protected boolean checkArrayClosing() {
+    if (!json.isEmpty()) {
+      char lastChar = json.charAt(json.length() - 1);
+      if (!allBrackets.isEmpty() && allBrackets.peek() == '['
+              && (lastChar == '\"' || lastChar == ']' || lastChar == '}')) {
+        allBrackets.pop();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * A new string is allowed only if '"' is preceded by ':', ',', '['.
+   *
+   * <p>This method also checks if the current character goes in a key or
+   * a value.
+   * Adjusts the counters and index markers accordingly
+   *
+   * @return a boolean value indicating the validity of '\"'.
+   */
+  @Override
+  protected boolean checkStringEntries() {
+    if (!json.isEmpty()) {
+      char lastChar = json.charAt(json.length() - 1);
+      if (!allBrackets.isEmpty() && allBrackets.peek() == '{'
+              && keyCount < keyValueCount && lastChar != ':') {
+        keyCount += 1;
+        inKey = true;
+        return true;
+      } else if (countBraces >= 1 && (lastChar == '['
+              || lastChar == ':' || lastChar == ',')) {
+        inValue = true;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * This method checks if the separation character is placed
+   * correctly at the current position.
+   *
+   * @return a boolean value indicating the validity of the ',' separation.
+   */
+  @Override
+  protected boolean checkSeparation() {
+    if (!json.isEmpty()) {
+      char lastChar = json.charAt(json.length() - 1);
+      if (separatedCount == keyCount && (lastChar == '}'
+              || lastChar == ']' || lastChar == '\"')) {
+        if (!allBrackets.isEmpty() && allBrackets.peek() == '{') {
+          keyValueCount += 1;
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * This method checks is the colon s placed at the correct spot
+   * in the json.
+   * It should separate a key-value pair, if not in value string.
+   *
+   * @return a boolean value indicating the validity of the ':' separation.
+   */
+  @Override
+  protected boolean checkColon() {
+    if (!allBrackets.isEmpty() && allBrackets.peek() == '{'
+            && json.charAt(json.length() - 1) == '\"') {
+      separatedCount += 1;
+      return true;
     }
     return false;
   }

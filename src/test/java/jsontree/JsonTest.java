@@ -5,54 +5,81 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-
 /**
  * This is a test class to test the functionalities of
  * jsontree package.
  */
 public class JsonTest {
+  JsonNode node;
+
   @Test
   public void testJsonStringConstructor() {
-    JsonString node = new JsonString("Test");
+    node = new JsonString("");
 
-    assertEquals("\"Test\"", node.prettyPrint());
+    assertNotEquals(null, node);
+    assertEquals("\"\"", node.prettyPrint());
   }
 
   @Test
   public void testJsonArrayConstructor() {
-    JsonArray node = new JsonArray();
-
+    node = new JsonArray();
     assertEquals("[\n]", node.prettyPrint());
   }
 
   @Test
   public void testJsonObjectConstructor() {
-    IJsonObject node = new JsonObject();
-
+    node = new JsonObject();
     assertEquals("{\n}", node.prettyPrint());
   }
 
   @Test
   public void testValidString() {
-    JsonString node = new JsonString("Test");
+    node = new JsonString("Test");
 
+    assertNotEquals(null, node);
     assertEquals("\"Test\"", node.prettyPrint());
   }
 
   @Test
-  public void testEmptyArray() {
-    IJsonArray node = new JsonArray();
+  public void testValidSpecialCharactersString() {
+    node = new JsonString("Speci@l Ch@racter$");
+    assertEquals("\"Speci@l Ch@racter$\"", node.prettyPrint());
+  }
 
+
+  @Test
+  public void testEmptyArray() {
+    node = new JsonArray();
     assertEquals("[\n]", node.prettyPrint());
   }
 
   @Test
-  public void testValidArray() {
+  public void testValidArraySingleEntry() {
+    IJsonArray node = new JsonArray();
+    node.add(new JsonString("Test"));
+
+    assertEquals("[\n  \"Test\"\n]", node.prettyPrint());
+  }
+
+  @Test
+  public void testValidArrayMultipleEntries() {
     IJsonArray node = new JsonArray();
     node.add(new JsonString("Test"));
     node.add(new JsonString("Array"));
 
     assertEquals("[\n  \"Test\",\n  \"Array\"\n]", node.prettyPrint());
+  }
+
+  @Test
+  public void testValidNestedArray() {
+    IJsonArray node = new JsonArray();
+    node.add(new JsonString("Test"));
+
+    IJsonArray node1 = new JsonArray();
+    node1.add(node);
+    node1.add(new JsonString("Test"));
+
+    assertEquals("[\n  [\n    \"Test\"\n  ],\n  \"Test\"\n]", node1.prettyPrint());
   }
 
   @Test
@@ -114,14 +141,38 @@ public class JsonTest {
 
   @Test
   public void testUnequalStringTypes() {
-    JsonString str1 = new JsonString("Test");
+    JsonNode str1 = new JsonString("Test");
     String str2 = "Test";
 
     assertNotEquals(str1, str2);
   }
 
   @Test
-  public void testEqualArrays() {
+  public void testUnequalTypesWithJsonString1() {
+    JsonNode str = new JsonString("Test");
+    JsonNode arr = new JsonArray();
+
+    assertNotEquals(str, arr);
+  }
+
+  @Test
+  public void testUnequalTypesWithJsonString2() {
+    JsonNode str = new JsonString("Test");
+    JsonNode obj = new JsonObject();
+
+    assertNotEquals(str, obj);
+  }
+
+  @Test
+  public void testEqualArrays1() {
+    node = new JsonArray();
+    JsonNode node1 = new JsonArray();
+
+    assertEquals(node, node1);
+  }
+
+  @Test
+  public void testEqualArrays2() {
     IJsonArray a = new JsonArray();
     a.add(new JsonString("This"));
     a.add(new JsonString("is"));
@@ -129,12 +180,12 @@ public class JsonTest {
     a.add(new JsonString("Test"));
 
     IJsonArray b = new JsonArray();
-    a.add(new JsonString("This"));
-    a.add(new JsonString("is"));
-    a.add(new JsonString("a"));
-    a.add(new JsonString("Test"));
+    b.add(new JsonString("This"));
+    b.add(new JsonString("is"));
+    b.add(new JsonString("a"));
+    b.add(new JsonString("Test"));
 
-    assertNotEquals(a, b);
+    assertEquals(a, b);
   }
 
   @Test
@@ -146,16 +197,32 @@ public class JsonTest {
     a.add(new JsonString("Test"));
 
     IJsonArray b = new JsonArray();
-    a.add(new JsonString("a"));
-    a.add(new JsonString("Test"));
-    a.add(new JsonString("This"));
-    a.add(new JsonString("is"));
+    b.add(new JsonString("a"));
+    b.add(new JsonString("Test"));
+    b.add(new JsonString("This"));
+    b.add(new JsonString("is"));
 
     assertNotEquals(a, b);
   }
 
   @Test
-  public void testEqualNodes() {
+  public void testUnequalTypesWithJsonArray() {
+    JsonNode arr = new JsonArray();
+    JsonNode obj = new JsonObject();
+
+    assertNotEquals(obj, arr);
+  }
+
+  @Test
+  public void testEqualNodes1() {
+    JsonNode root1 = new JsonObject();
+    JsonNode root2 = new JsonObject();
+
+    assertEquals(root1, root2);
+  }
+
+  @Test
+  public void testEqualNodes2() {
     IJsonObject root1 = new JsonObject();
     IJsonObject root2 = new JsonObject();
 
@@ -274,5 +341,62 @@ public class JsonTest {
     root2.add("time", obj2);
 
     assertEquals(root1, root2);
+  }
+
+  @Test
+  public void testSameNodes() {
+    IJsonObject root1 = new JsonObject();
+
+    assertEquals(root1, root1);
+  }
+
+  @Test
+  public void testUnequalNodesInArray2() {
+    IJsonObject root1 = new JsonObject();
+    IJsonObject root2 = new JsonObject();
+
+    IJsonArray a = new JsonArray();
+    a.add(new JsonString("This"));
+    a.add(new JsonString("is"));
+    a.add(new JsonString("a"));
+    a.add(new JsonString("Test1"));
+
+
+    root1.add("What is this?", a);
+
+    assertNotEquals(root1, root2);
+  }
+
+  @Test
+  public void testHashCode() {
+    IJsonObject root1 = new JsonObject();
+    IJsonObject root2 = new JsonObject();
+
+    root1.add("Test", new JsonString("Equality"));
+    root2.add("Test", new JsonString("Equality"));
+
+    IJsonArray a = new JsonArray();
+    a.add(new JsonString("This"));
+    a.add(new JsonString("is"));
+    a.add(new JsonString("a"));
+    a.add(new JsonString("Test"));
+
+    root1.add("What is this", a);
+    root2.add("What is this", a);
+
+    assertEquals(root1, root2);
+    assertEquals(root1.hashCode(), root2.hashCode());
+  }
+
+  @Test
+  public void testUnequalHasCodes() {
+    IJsonObject root1 = new JsonObject();
+    IJsonObject root2 = new JsonObject();
+
+    root1.add("Test1", new JsonString("Equality"));
+    root2.add("Test2", new JsonString("Equality"));
+
+    assertNotEquals(root1, root2);
+    assertNotEquals(root1.hashCode(), root2.hashCode());
   }
 }

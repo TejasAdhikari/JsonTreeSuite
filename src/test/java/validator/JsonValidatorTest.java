@@ -249,7 +249,7 @@ public class JsonValidatorTest {
   }
 
   // This method tests if another character is added after a valid input
-  @Test
+  @Test(expected = InvalidJsonException.class)
   public void testInvalidInputJsonExtraChar() throws InvalidJsonException {
     jsonString = new JsonValidator();
 
@@ -420,5 +420,17 @@ public class JsonValidatorTest {
     stringStreamInput(jsonString, inputJson);
 
     assertEquals("Status:Valid", jsonString.output());
+  }
+
+  @Test(expected = InvalidJsonException.class)
+  public void testValidThenInvalidInput() throws InvalidJsonException {
+    jsonString = new JsonValidator();
+
+    String inputJson = "{}";
+    stringStreamInput(jsonString, inputJson);
+    assertEquals("Status:Valid", jsonString.output());
+
+    jsonString.input('{');
+    assertEquals("Status:Invalid", jsonString.output());
   }
 }

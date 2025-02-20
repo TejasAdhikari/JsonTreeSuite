@@ -197,6 +197,18 @@ public class JsonTreeBuilderTest {
   }
 
   @Test(expected = InvalidJsonException.class)
+  public void testValidThenInvalidInput() throws InvalidJsonException {
+    jsonTree = new JsonTreeBuilder();
+
+    String inputJson = "{}";
+    stringStreamInput(jsonTree, inputJson);
+    assertEquals("{\n}", jsonTree.output().prettyPrint());
+
+    jsonTree.input('{');
+    assertNull(jsonTree.output());
+  }
+
+  @Test(expected = InvalidJsonException.class)
   public void testInvalidKey() throws InvalidJsonException {
     jsonTree = new JsonTreeBuilder();
 
@@ -255,7 +267,7 @@ public class JsonTreeBuilderTest {
   }
 
   // This method tests if another character is added after a valid input
-  @Test
+  @Test(expected = InvalidJsonException.class)
   public void testInvalidInputJsonExtraChar() throws InvalidJsonException {
     jsonTree = new JsonTreeBuilder();
 
@@ -481,8 +493,10 @@ public class JsonTreeBuilderTest {
     assertEquals(root2, root);
   }
 
-  //  @Test
-  //  public void testTreeBuilderConstructor() {
-  //
-  //  }
+  @Test
+  public void testTreeBuilderConstructor() {
+    JsonParser<JsonNode> node = new JsonTreeBuilder();
+
+    assertNull(node.output());
+  }
 }
