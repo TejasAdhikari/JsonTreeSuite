@@ -1,19 +1,18 @@
 ﻿# JsonTreeSuite
-JsonTreeSuite is a versatile and efficient library designed to simplify the manipulation, traversal, and transformation of JSON data structures. Whether you're working with complex nested JSON objects or simple key-value pairs, JsonTreeSuite provides a comprehensive set of tools to make your life easier.
+JsonTreeSuite is a versatile and efficient library designed to simplify the manipulation, traversal, and transformation of JSON data structures. Whether you're working with complex nested JSON objects[...]
 
-Features
-Easy Traversal: Navigate through JSON structures with ease using intuitive methods.
+## Features
+- **Easy Traversal**: Navigate through JSON structures with ease using intuitive methods.
+- **Data Manipulation**: Add, update, or remove elements from your JSON data effortlessly.
+- **Transformation**: Convert JSON data into different formats or structures as needed.
+- **Validation**: Ensure your JSON data adheres to expected schemas or formats.
+- **Utility Functions**: A collection of utility functions to handle common JSON-related tasks.
 
-Data Manipulation: Add, update, or remove elements from your JSON data effortlessly.
-
-Transformation: Convert JSON data into different formats or structures as needed.
-
-Validation: Ensure your JSON data adheres to expected schemas or formats.
-
-Utility Functions: A collection of utility functions to handle common JSON-related tasks.
-
-Installation
+## Installation
 To install JsonTreeSuite, you can use npm:
+
+```bash
+npm install jsontreesuite
 
 bash
 Copy
