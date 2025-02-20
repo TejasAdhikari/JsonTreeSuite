@@ -13,20 +13,18 @@ To install JsonTreeSuite, you can use npm:
 
 ```bash
 npm install jsontreesuite
+```
 
-bash
-Copy
-npm install jsontreesuite
 Or, if you prefer using yarn:
 
-bash
-Copy
+```Copy
 yarn add jsontreesuite
+```
 Usage
 Here's a quick example to get you started with JsonTreeSuite:
 
 javascript
-Copy
+```Copy
 const JsonTreeSuite = require('jsontreesuite');
 
 const jsonData = {
@@ -54,13 +52,15 @@ console.log(tree.get('address.zip')); // Output: 12345
 // Removing data
 tree.remove('address.city');
 console.log(tree.get('address.city')); // Output: undefined
-API Documentation
+```
+
+## API Documentation
 For detailed information on all the methods and functionalities provided by JsonTreeSuite, please refer to the API Documentation.
 
-Contributing
+## Contributing
 We welcome contributions from the community! If you'd like to contribute to JsonTreeSuite, please follow these steps:
 
-Fork the repository.
+## Fork the repository.
 
 Create a new branch for your feature or bugfix.
 
@@ -72,10 +72,10 @@ Submit a pull request to the main repository.
 
 Please ensure your code follows the project's coding standards and includes appropriate tests.
 
-License
+## License
 JsonTreeSuite is licensed under the MIT License. See the LICENSE file for more details.
 
-Support
+## Support
 If you encounter any issues or have any questions, please open an issue on the GitHub repository.
 
 Happy coding with JsonTreeSuite! 🚀
